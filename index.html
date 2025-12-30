@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>threedee — Parametric Design Environment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <svg class="logo-icon" viewBox="0 0 32 32" fill="none">
+            <path d="M16 2L2 10v12l14 8 14-8V10L16 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M16 2v28M2 10l14 8 14-8" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <span class="logo-text">threedee</span>
+        </div>
+        <span class="version-tag">v0.1.0</span>
+      </div>
+      
+      <div class="header-center">
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          <span class="status-text">Live</span>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <div class="coordinates">
+          <span class="coord" id="coord-x">X: 0.00</span>
+          <span class="coord" id="coord-y">Y: 0.00</span>
+          <span class="coord" id="coord-z">Z: 0.00</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Viewport -->
+    <main class="viewport-container">
+      <canvas id="viewport"></canvas>
+      
+      <!-- Viewport overlay elements -->
+      <div class="viewport-overlay">
+        <div class="axis-indicator">
+          <div class="axis-label axis-x">X</div>
+          <div class="axis-label axis-y">Y</div>
+          <div class="axis-label axis-z">Z</div>
+        </div>
+      </div>
+      
+      <!-- Grid info -->
+      <div class="grid-info">
+        <span class="grid-label">Grid: 1 unit</span>
+        <span class="grid-divider">•</span>
+        <span class="grid-label">Snap: On</span>
+      </div>
+      
+      <!-- Viewport controls hint -->
+      <div class="controls-hint">
+        <span>Orbit: LMB</span>
+        <span>Pan: RMB</span>
+        <span>Zoom: Scroll</span>
+      </div>
+    </main>
+
+    <!-- Footer status bar -->
+    <footer class="footer">
+      <div class="footer-left">
+        <span class="footer-item">
+          <svg viewBox="0 0 16 16" fill="currentColor" class="footer-icon">
+            <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            <path d="M8 4v4l3 1.5" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          </svg>
+          <span id="render-time">16.7ms</span>
+        </span>
+        <span class="footer-item">
+          <span class="fps-counter" id="fps">60 FPS</span>
+        </span>
+      </div>
+      <div class="footer-center">
+        <span class="model-info" id="model-info">Primitives: 1 • Vertices: 482 • Faces: 960</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-item">WebGL 2.0</span>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
