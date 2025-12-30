@@ -106,8 +106,8 @@ export function exportOBJ(mesh, name = 'model') {
  * Export mesh to glTF format
  * Best for: Web, games, realtime applications
  */
-ex({ mesh, name } = resolveTarget(mesh, name));
-  port function exportGLTF(mesh, name = 'model') {
+export function exportGLTF(mesh, name = 'model') {
+  ({ mesh, name } = resolveTarget(mesh, name));
   const exporter = new GLTFExporter();
   
   return new Promise((resolve, reject) => {
@@ -132,8 +132,8 @@ ex({ mesh, name } = resolveTarget(mesh, name));
  * Export mesh to GLB format (binary glTF)
  * Best for: Compact file size, single-file distribution
  */
-ex({ mesh, name } = resolveTarget(mesh, name));
-  port function exportGLB(mesh, name = 'model') {
+export function exportGLB(mesh, name = 'model') {
+  ({ mesh, name } = resolveTarget(mesh, name));
   const exporter = new GLTFExporter();
   
   return new Promise((resolve, reject) => {
@@ -164,8 +164,8 @@ ex({ mesh, name } = resolveTarget(mesh, name));
  */
 export function exportSTEP(mesh, name = 'model') {
   return new Promise((resolve, reject) => {
-    tr({ mesh, name } = resolveTarget(mesh, name));
-      y {
+    try {
+      ({ mesh, name } = resolveTarget(mesh, name));
       const geometry = mesh.geometry;
       
       // Ensure we have position attribute
@@ -314,8 +314,8 @@ export function exportSTEP(mesh, name = 'model') {
 /**
  * Export mesh to multiple formats at once
  */
-ex({ mesh, name } = resolveTarget(mesh, name));
-  port async function exportAll(mesh, name = 'model', formats = ['stl', 'obj', 'gltf', 'step']) {
+export async function exportAll(mesh, name = 'model', formats = ['stl', 'obj', 'gltf', 'step']) {
+  ({ mesh, name } = resolveTarget(mesh, name));
   const results = {};
   
   for (const format of formats) {
@@ -361,8 +361,8 @@ if (typeof window !== 'undefined') {
   };
   
   console.info('📦 Export functions available via window.threedeeExport');
-  console.info('   Formats: stl, obj, gltf, glb) // Exports current mesh');
+  console.info('   Formats: stl, obj, gltf, glb, step');
+  console.info('   Example: threedeeExport.stl() // Exports current mesh');
   console.info('   Example: threedeeExport.stl(mesh, "my-part")');
   console.info('   Example: threedeeExport.all(null, "my-part")');
-  console.info('   Example: threedeeExport.all(mesh, "my-part")');
 }
