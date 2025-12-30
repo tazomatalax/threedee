@@ -138,19 +138,7 @@ const material = new THREE.MeshStandardMaterial({
 // Cylinder gyroid demo
 import { createMesh as createGyroid } from '../user/models/cylinder-gyroid.js';
 
-const gyroidParams = {
-  radius: 1.0,
-  height: 2.0,
-  resolution: 48,
-  frequency: 1.5,
-  level: 0.0,
-  isolation: 0.0,
-  color: 0x4a5568,
-  metalness: 0.3,
-  roughness: 0.4,
-};
-
-const mesh = createGyroid(gyroidParams);
+const mesh = createGyroid();
 mesh.castShadow = true;
 mesh.receiveShadow = true;
 scene.add(mesh);

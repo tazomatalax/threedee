@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { MarchingCubes } from 'three/examples/jsm/objects/MarchingCubes.js';
 
 export const parameters = {
-  radius: 1.0,
-  height: 2.0,
-  resolution: 48,      // marching cubes resolution (lower = faster)
+  radius: 3.0,
+  height: 6.0,
+  resolution: 64,      // marching cubes resolution (lower = faster)
   frequency: 1.5,      // spatial frequency of the gyroid (controls number of periods)
-  level: 0.0,          // isosurface level for gyroid (0 is the standard gyroid)
+  level: 0.8,          // isosurface level for gyroid (0 is the standard gyroid)
   isolation: 0.0,      // marching cubes isolation value (we use zero-level)
   color: 0x4a5568,
   metalness: 0.3,

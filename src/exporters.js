@@ -15,6 +15,20 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 // ════════════════════════════════════════════════════════════════════════════
 
 /**
+ * Helper to resolve mesh and name if not provided
+ */
+function resolveTarget(mesh, name) {
+  if (!mesh && typeof window !== 'undefined' && window.mesh) {
+    mesh = window.mesh;
+  }
+  if (!mesh) {
+    console.error('❌ No mesh provided and no window.mesh found.');
+    throw new Error('No mesh to export');
+  }
+  return { mesh, name: name || 'model' };
+}
+
+/**
  * Generate a timestamped filename
  */
 function generateFilename(baseName, extension) {
@@ -46,6 +60,7 @@ function downloadFile(content, filename, mimeType) {
  * Best for: 3D printing
  */
 export function exportSTL(mesh, name = 'model') {
+  ({ mesh, name } = resolveTarget(mesh, name));
   const exporter = new STLExporter();
   const result = exporter.parse(mesh, { binary: true });
   const filename = generateFilename(name, 'stl');
@@ -58,6 +73,7 @@ export function exportSTL(mesh, name = 'model') {
  * Useful for debugging or text-based workflows
  */
 export function exportSTLAscii(mesh, name = 'model') {
+  ({ mesh, name } = resolveTarget(mesh, name));
   const exporter = new STLExporter();
   const result = exporter.parse(mesh, { binary: false });
   const filename = generateFilename(name, 'stl');
@@ -74,6 +90,7 @@ export function exportSTLAscii(mesh, name = 'model') {
  * Best for: General 3D interchange, includes UVs and normals
  */
 export function exportOBJ(mesh, name = 'model') {
+  ({ mesh, name } = resolveTarget(mesh, name));
   const exporter = new OBJExporter();
   const result = exporter.parse(mesh);
   const filename = generateFilename(name, 'obj');
@@ -89,7 +106,8 @@ export function exportOBJ(mesh, name = 'model') {
  * Export mesh to glTF format
  * Best for: Web, games, realtime applications
  */
-export function exportGLTF(mesh, name = 'model') {
+ex({ mesh, name } = resolveTarget(mesh, name));
+  port function exportGLTF(mesh, name = 'model') {
   const exporter = new GLTFExporter();
   
   return new Promise((resolve, reject) => {
@@ -114,7 +132,8 @@ export function exportGLTF(mesh, name = 'model') {
  * Export mesh to GLB format (binary glTF)
  * Best for: Compact file size, single-file distribution
  */
-export function exportGLB(mesh, name = 'model') {
+ex({ mesh, name } = resolveTarget(mesh, name));
+  port function exportGLB(mesh, name = 'model') {
   const exporter = new GLTFExporter();
   
   return new Promise((resolve, reject) => {
@@ -145,7 +164,8 @@ export function exportGLB(mesh, name = 'model') {
  */
 export function exportSTEP(mesh, name = 'model') {
   return new Promise((resolve, reject) => {
-    try {
+    tr({ mesh, name } = resolveTarget(mesh, name));
+      y {
       const geometry = mesh.geometry;
       
       // Ensure we have position attribute
@@ -294,7 +314,8 @@ export function exportSTEP(mesh, name = 'model') {
 /**
  * Export mesh to multiple formats at once
  */
-export async function exportAll(mesh, name = 'model', formats = ['stl', 'obj', 'gltf', 'step']) {
+ex({ mesh, name } = resolveTarget(mesh, name));
+  port async function exportAll(mesh, name = 'model', formats = ['stl', 'obj', 'gltf', 'step']) {
   const results = {};
   
   for (const format of formats) {
@@ -340,7 +361,8 @@ if (typeof window !== 'undefined') {
   };
   
   console.info('📦 Export functions available via window.threedeeExport');
-  console.info('   Formats: stl, obj, gltf, glb, step');
+  console.info('   Formats: stl, obj, gltf, glb) // Exports current mesh');
   console.info('   Example: threedeeExport.stl(mesh, "my-part")');
+  console.info('   Example: threedeeExport.all(null, "my-part")');
   console.info('   Example: threedeeExport.all(mesh, "my-part")');
 }
