@@ -96,12 +96,39 @@ export function createMesh(params = parameters) {
 
 ### Exporting Models
 
-In browser console:
+Export the active 3D model to various formats using the browser console or programmatically:
+
+#### Single Format Exports
 ```javascript
-threedeeExport.stl(mesh, "my-part")   // STL for 3D printing
-threedeeExport.obj(mesh, "my-part")   // OBJ general format
-threedeeExport.gltf(mesh, "my-part")  // glTF for web
+// STL (3D printing)
+threedeeExport.stl(mesh, "my-part")         // Binary (recommended)
+threedeeExport.stlAscii(mesh, "my-part")   // ASCII text format
+
+// General interchange
+threedeeExport.obj(mesh, "my-part")        // OBJ with UVs and normals
+
+// Web and AR
+threedeeExport.gltf(mesh, "my-part")       // glTF (JSON)
+threedeeExport.glb(mesh, "my-part")        // GLB (binary, compact)
+
+// CAD interchange
+threedeeExport.step(mesh, "my-part")       // STEP Faceted B-Rep
 ```
+
+#### Batch Export (All Formats)
+```javascript
+// Export to STL, OBJ, glTF, and STEP simultaneously
+await threedeeExport.all(mesh, "my-part")
+
+// Export to specific formats
+await threedeeExport.all(mesh, "my-part", ['stl', 'step', 'obj'])
+```
+
+#### Export Notes
+- Files are automatically timestamped: `my-part_2025-12-30_23-02-15.stl`
+- Browser downloads are triggered automatically
+- Console logs confirm successful exports
+- The `mesh` variable is always available in the console and accessible via `window.mesh`
 
 ### Lighting Adjustment
 

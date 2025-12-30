@@ -309,5 +309,14 @@ if (import.meta.hot) {
   import.meta.hot.accept();
 }
 
+// Expose to window for console access
+if (typeof window !== 'undefined') {
+  window.mesh = mesh;
+  window.scene = scene;
+  window.camera = camera;
+  window.renderer = renderer;
+  window.material = material;
+}
+
 // Export for potential external manipulation
 export { scene, camera, renderer, mesh, material };
