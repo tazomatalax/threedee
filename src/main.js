@@ -12,7 +12,7 @@ import './exporters.js'; // Initialize export functions on window.threedeeExport
 // ════════════════════════════════════════════════════════════════════════════
 
 const state = {
-  autoRotate: true,
+  autoRotate: false,
   showBoundingBox: false,
 };
 
@@ -38,9 +38,9 @@ const camera = new THREE.PerspectiveCamera(
   45,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  2000
 );
-camera.position.set(5, 4, 6);
+camera.position.set(60, 50, 80);
 camera.lookAt(0, 0, 0);
 
 // Controls
@@ -48,7 +48,7 @@ const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.minDistance = 2;
-controls.maxDistance = 50;
+controls.maxDistance = 500;
 controls.target.set(0, 0, 0);
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -89,7 +89,7 @@ scene.add(rimLight);
 // ════════════════════════════════════════════════════════════════════════════
 
 // Custom infinite grid
-const gridSize = 20;
+const gridSize = 200;
 const gridDivisions = 20;
 
 // Main grid
@@ -99,12 +99,12 @@ grid.material.transparent = true;
 scene.add(grid);
 
 // Axis lines (subtle)
-const axisLength = 10;
+const axisLength = 100;
 
 // X axis (red)
 const xAxisGeometry = new THREE.BufferGeometry().setFromPoints([
-  new THREE.Vector3(0, 0.001, 0),
-  new THREE.Vector3(axisLength, 0.001, 0)
+  new THREE.Vector3(0, 0.01, 0),
+  new THREE.Vector3(axisLength, 0.01, 0)
 ]);
 const xAxisMaterial = new THREE.LineBasicMaterial({ color: 0xef4444, opacity: 0.5, transparent: true });
 const xAxis = new THREE.Line(xAxisGeometry, xAxisMaterial);
@@ -121,8 +121,8 @@ scene.add(yAxis);
 
 // Z axis (blue)
 const zAxisGeometry = new THREE.BufferGeometry().setFromPoints([
-  new THREE.Vector3(0, 0.001, 0),
-  new THREE.Vector3(0, 0.001, axisLength)
+  new THREE.Vector3(0, 0.01, 0),
+  new THREE.Vector3(0, 0.01, axisLength)
 ]);
 const zAxisMaterial = new THREE.LineBasicMaterial({ color: 0x3b82f6, opacity: 0.5, transparent: true });
 const zAxis = new THREE.Line(zAxisGeometry, zAxisMaterial);
@@ -141,7 +141,7 @@ const material = new THREE.MeshStandardMaterial({
 });
 
 // Cylinder gyroid demo
-import { createMesh as createGyroid } from '../user/models/cylinder-gyroid.js';
+import { createMesh as createGyroid, parameters as gyroidParams } from '../user/models/cylinder-gyroid.js';
 
 const mesh = createGyroid();
 mesh.castShadow = true;
@@ -308,15 +308,16 @@ function updateModelInfo() {
   modelInfo.textContent = `Primitives: ${primitives} • Vertices: ${vertices.toLocaleString()} • Faces: ${Math.round(faces).toLocaleString()}`;
 }
 
-// Update dimension display based on mesh bounding box
+// Update dimension display based on actual mesh bounding box
 function updateDimensions() {
   const box = new THREE.Box3().setFromObject(mesh);
   const size = new THREE.Vector3();
   box.getSize(size);
   
-  dimWidth.textContent = size.x.toFixed(2);
-  dimHeight.textContent = size.y.toFixed(2);
-  dimDepth.textContent = size.z.toFixed(2);
+  // Show actual mesh dimensions (what will be exported)
+  dimWidth.textContent = `${size.x.toFixed(1)} mm`;
+  dimHeight.textContent = `${size.y.toFixed(1)} mm`;
+  dimDepth.textContent = `${size.z.toFixed(1)} mm`;
   
   // Update bounding box helper
   boundingBoxHelper.box.copy(box);
@@ -331,6 +332,23 @@ bboxToggle.addEventListener('click', () => {
   boundingBoxHelper.visible = state.showBoundingBox;
   bboxToggle.textContent = state.showBoundingBox ? 'Hide' : 'Show';
   bboxToggle.classList.toggle('active', state.showBoundingBox);
+});
+
+// Export button handlers
+document.getElementById('export-stl').addEventListener('click', () => {
+  window.threedeeExport.stl(mesh, 'cylinder-gyroid');
+});
+document.getElementById('export-obj').addEventListener('click', () => {
+  window.threedeeExport.obj(mesh, 'cylinder-gyroid');
+});
+document.getElementById('export-gltf').addEventListener('click', async () => {
+  await window.threedeeExport.gltf(mesh, 'cylinder-gyroid');
+});
+document.getElementById('export-glb').addEventListener('click', async () => {
+  await window.threedeeExport.glb(mesh, 'cylinder-gyroid');
+});
+document.getElementById('export-step').addEventListener('click', async () => {
+  await window.threedeeExport.step(mesh, 'cylinder-gyroid');
 });
 
 // Animation loop
@@ -429,7 +447,7 @@ window.addEventListener('keydown', (e) => {
 
   if (e.key.toLowerCase() === 'h') {
     // Reset camera position
-    camera.position.set(5, 4, 6);
+    camera.position.set(60, 50, 80);
     controls.target.set(0, 0, 0);
     controls.update();
     

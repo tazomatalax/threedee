@@ -299,6 +299,73 @@ body {
   opacity: 1;
 }
 
+/* Export panel */
+.export-panel {
+  position: absolute;
+  top: 140px;
+  right: 16px;
+  background: rgba(26, 26, 30, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  padding: 12px;
+  pointer-events: auto;
+  user-select: none;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.export-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.export-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.export-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--accent-primary);
+}
+
+.export-btn:active {
+  transform: scale(0.98);
+}
+
+.export-format {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.export-desc {
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
 /* Shortcuts Legend */
 .shortcuts-legend {
   position: absolute;
