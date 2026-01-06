@@ -46,10 +46,33 @@
       
       <!-- Viewport overlay elements -->
       <div class="viewport-overlay">
+        <!-- Rotating axis gizmo -->
         <div class="axis-indicator">
-          <div class="axis-label axis-x">X</div>
-          <div class="axis-label axis-y">Y</div>
-          <div class="axis-label axis-z">Z</div>
+          <canvas id="axis-gizmo" width="80" height="80"></canvas>
+        </div>
+
+        <!-- Dimension display panel -->
+        <div class="dimension-panel">
+          <div class="dimension-title">DIMENSIONS</div>
+          <div class="dimension-items">
+            <div class="dimension-item">
+              <span class="dimension-label">Width (X)</span>
+              <span class="dimension-value" id="dim-width">4.00</span>
+            </div>
+            <div class="dimension-item">
+              <span class="dimension-label">Height (Y)</span>
+              <span class="dimension-value" id="dim-height">2.00</span>
+            </div>
+            <div class="dimension-item">
+              <span class="dimension-label">Depth (Z)</span>
+              <span class="dimension-value" id="dim-depth">4.00</span>
+            </div>
+            <div class="dimension-divider"></div>
+            <div class="dimension-item">
+              <span class="dimension-label">Bounding Box</span>
+              <span class="dimension-value dimension-toggle" id="bbox-toggle">Show</span>
+            </div>
+          </div>
         </div>
 
         <div class="shortcuts-legend">

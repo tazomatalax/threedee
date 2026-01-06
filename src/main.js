@@ -13,6 +13,7 @@ import './exporters.js'; // Initialize export functions on window.threedeeExport
 
 const state = {
   autoRotate: true,
+  showBoundingBox: false,
 };
 
 const canvas = document.getElementById('viewport');
@@ -147,6 +148,11 @@ mesh.castShadow = true;
 mesh.receiveShadow = true;
 scene.add(mesh);
 
+// Bounding box helper for dimension visualization
+const boundingBoxHelper = new THREE.Box3Helper(new THREE.Box3(), 0x22d3ee);
+boundingBoxHelper.visible = state.showBoundingBox;
+scene.add(boundingBoxHelper);
+
 // Ground plane for shadows
 const groundGeometry = new THREE.PlaneGeometry(50, 50);
 const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });
@@ -198,6 +204,68 @@ const envMap = pmremGenerator.fromScene(envScene, 0, 0.1, 1000).texture;
 scene.environment = envMap;
 
 // ════════════════════════════════════════════════════════════════════════════
+// Axis Gizmo (rotating view indicator)
+// ════════════════════════════════════════════════════════════════════════════
+
+const axisGizmoCanvas = document.getElementById('axis-gizmo');
+const axisGizmoRenderer = new THREE.WebGLRenderer({
+  canvas: axisGizmoCanvas,
+  antialias: true,
+  alpha: true,
+});
+axisGizmoRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+axisGizmoRenderer.setSize(80, 80);
+axisGizmoRenderer.setClearColor(0x000000, 0);
+
+const axisGizmoScene = new THREE.Scene();
+const axisGizmoCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+axisGizmoCamera.position.set(0, 0, 3);
+axisGizmoCamera.lookAt(0, 0, 0);
+
+// Create axis arrows
+function createAxisArrow(dir, color) {
+  const group = new THREE.Group();
+  
+  // Shaft
+  const shaftGeom = new THREE.CylinderGeometry(0.04, 0.04, 0.7, 8);
+  const shaftMat = new THREE.MeshBasicMaterial({ color });
+  const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+  shaft.position.set(dir.x * 0.35, dir.y * 0.35, dir.z * 0.35);
+  
+  // Rotate shaft to point in direction
+  if (dir.x !== 0) shaft.rotation.z = -Math.PI / 2;
+  if (dir.z !== 0) shaft.rotation.x = Math.PI / 2;
+  
+  group.add(shaft);
+  
+  // Cone tip
+  const coneGeom = new THREE.ConeGeometry(0.1, 0.2, 8);
+  const coneMat = new THREE.MeshBasicMaterial({ color });
+  const cone = new THREE.Mesh(coneGeom, coneMat);
+  cone.position.set(dir.x * 0.8, dir.y * 0.8, dir.z * 0.8);
+  
+  if (dir.x !== 0) cone.rotation.z = dir.x > 0 ? -Math.PI / 2 : Math.PI / 2;
+  if (dir.z !== 0) cone.rotation.x = dir.z > 0 ? Math.PI / 2 : -Math.PI / 2;
+  if (dir.y < 0) cone.rotation.x = Math.PI;
+  
+  group.add(cone);
+  
+  return group;
+}
+
+const axisGizmo = new THREE.Group();
+axisGizmo.add(createAxisArrow(new THREE.Vector3(1, 0, 0), 0xef4444)); // X - red
+axisGizmo.add(createAxisArrow(new THREE.Vector3(0, 1, 0), 0x22c55e)); // Y - green
+axisGizmo.add(createAxisArrow(new THREE.Vector3(0, 0, 1), 0x3b82f6)); // Z - blue
+
+// Add small sphere at center
+const centerGeom = new THREE.SphereGeometry(0.08, 16, 16);
+const centerMat = new THREE.MeshBasicMaterial({ color: 0x888888 });
+axisGizmo.add(new THREE.Mesh(centerGeom, centerMat));
+
+axisGizmoScene.add(axisGizmo);
+
+// ════════════════════════════════════════════════════════════════════════════
 // Animation & Render Loop
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -212,6 +280,10 @@ const coordX = document.getElementById('coord-x');
 const coordY = document.getElementById('coord-y');
 const coordZ = document.getElementById('coord-z');
 const modelInfo = document.getElementById('model-info');
+const dimWidth = document.getElementById('dim-width');
+const dimHeight = document.getElementById('dim-height');
+const dimDepth = document.getElementById('dim-depth');
+const bboxToggle = document.getElementById('bbox-toggle');
 
 // Update model info
 function updateModelInfo() {
@@ -236,7 +308,30 @@ function updateModelInfo() {
   modelInfo.textContent = `Primitives: ${primitives} • Vertices: ${vertices.toLocaleString()} • Faces: ${Math.round(faces).toLocaleString()}`;
 }
 
+// Update dimension display based on mesh bounding box
+function updateDimensions() {
+  const box = new THREE.Box3().setFromObject(mesh);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  
+  dimWidth.textContent = size.x.toFixed(2);
+  dimHeight.textContent = size.y.toFixed(2);
+  dimDepth.textContent = size.z.toFixed(2);
+  
+  // Update bounding box helper
+  boundingBoxHelper.box.copy(box);
+}
+
 updateModelInfo();
+updateDimensions();
+
+// Bounding box toggle handler
+bboxToggle.addEventListener('click', () => {
+  state.showBoundingBox = !state.showBoundingBox;
+  boundingBoxHelper.visible = state.showBoundingBox;
+  bboxToggle.textContent = state.showBoundingBox ? 'Hide' : 'Show';
+  bboxToggle.classList.toggle('active', state.showBoundingBox);
+});
 
 // Animation loop
 function animate() {
@@ -247,10 +342,15 @@ function animate() {
   // Gentle rotation for demo
   if (state.autoRotate) {
     mesh.rotation.y += 0.003;
+    updateDimensions(); // Update bounding box when rotating
   }
 
   // Update controls
   controls.update();
+
+  // Sync axis gizmo rotation with main camera
+  axisGizmo.quaternion.copy(camera.quaternion).invert();
+  axisGizmoRenderer.render(axisGizmoScene, axisGizmoCamera);
 
   // Render
   renderer.render(scene, camera);
