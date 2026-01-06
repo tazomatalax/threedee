@@ -138,6 +138,41 @@ keyLight.position.set(10, 15, 10);  // move light
 rimLight.color.setHex(0xff6600);    // orange rim
 ```
 
+## Advanced Modeling & Slicer Compatibility
+
+When creating complex procedural shapes (like gyroids or lattices) intended for 3D printing, follow these best practices to ensure "watertight" models and high-quality exports.
+
+### Marching Cubes Best Practices
+
+If using `MarchingCubes`, configure it for high resolution and clean boundaries:
+
+1.  **Polygon Budget**: Always set a high `maxPolyCount` (e.g., `1,000,000`) for high-resolution meshes to prevent model sections from being "cut off" due to buffer limits.
+2.  **Watertight Boundaries**: Use **padding** in your scalar field. Never let the isosurface (boundary) sit exactly on the domain edge. Sample a slightly larger domain than the actual object size to ensure the Marching Cubes algorithm can "close" the mesh.
+3.  **Boundary Smoothing**: When clipping shapes (e.g., using `Math.max` for a cylinder boundary), use a multiplier (e.g., `* 5` or `* 10`) for the boundary distance to create a smooth gradient that the interpolator can follow.
+4.  **Vertex Welding**: Always use `mergeVertices` from `BufferGeometryUtils` after `mc.update()` to weld coincident vertices. This fixes "cracks" and "open edges" that slicers often report.
+
+```javascript
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
+// ... inside createMesh ...
+const mc = new MarchingCubes(resolution, material, false, false, 1000000);
+// ... fill field ...
+mc.update();
+
+// Weld and recompute normals
+const welded = mergeVertices(mc.geometry, 1e-5);
+welded.computeVertexNormals();
+mc.geometry.dispose();
+mc.geometry = welded;
+```
+
+### Ensuring Export Quality
+
+The [src/exporters.js](src/exporters.js) utilities include an automated preparation step for STL exports that handles:
+- Coordinate system normalization (baking world transforms).
+- Vertex welding and normal correction.
+- Removal of degenerate (zero-area) triangles.
+
 ## Workflow
 
 1. User requests a 3D object or modification

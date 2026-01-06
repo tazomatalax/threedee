@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 // ════════════════════════════════════════════════════════════════════════════
 // Export Utilities
@@ -51,6 +52,75 @@ function downloadFile(content, filename, mimeType) {
   console.log(`📦 Exported: ${filename}`);
 }
 
+/**
+ * Prepare a mesh for triangle-based export (STL).
+ * - Bakes world transform into geometry (avoids exporter differences)
+ * - Welds near-identical vertices (helps slicers detect shared edges)
+ * - Optionally removes degenerate triangles
+ */
+function prepareMeshForSTL(mesh, options = {}) {
+  const {
+    weldTolerance = 1e-5,
+    removeDegenerate = true,
+    degenerateAreaEps = 1e-18,
+  } = options;
+
+  mesh.updateMatrixWorld(true);
+
+  // Clone & bake transform so we don't mutate the live scene mesh.
+  const geometry = mesh.geometry.clone();
+  geometry.applyMatrix4(mesh.matrixWorld);
+
+  // Ensure we have an index before filtering triangles.
+  const indexed = geometry.index ? geometry : mergeVertices(geometry, weldTolerance);
+
+  // Weld again after indexing to reduce tiny cracks from float noise.
+  const welded = mergeVertices(indexed, weldTolerance);
+
+  if (removeDegenerate && welded.index && welded.attributes.position) {
+    const pos = welded.attributes.position;
+    const idx = welded.index;
+    const newIndex = [];
+    const a = new THREE.Vector3();
+    const b = new THREE.Vector3();
+    const c = new THREE.Vector3();
+    const ab = new THREE.Vector3();
+    const ac = new THREE.Vector3();
+    const cross = new THREE.Vector3();
+
+    for (let i = 0; i < idx.count; i += 3) {
+      const ia = idx.getX(i);
+      const ib = idx.getX(i + 1);
+      const ic = idx.getX(i + 2);
+
+      a.set(pos.getX(ia), pos.getY(ia), pos.getZ(ia));
+      b.set(pos.getX(ib), pos.getY(ib), pos.getZ(ib));
+      c.set(pos.getX(ic), pos.getY(ic), pos.getZ(ic));
+
+      ab.subVectors(b, a);
+      ac.subVectors(c, a);
+      cross.crossVectors(ab, ac);
+      const area2 = cross.lengthSq(); // proportional to (2*area)^2
+
+      if (area2 > degenerateAreaEps) {
+        newIndex.push(ia, ib, ic);
+      }
+    }
+
+    welded.setIndex(newIndex);
+  }
+
+  welded.computeVertexNormals();
+
+  // Use a dummy mesh with identity transform so exporters don't re-apply transforms.
+  const out = new THREE.Mesh(welded, mesh.material);
+  out.position.set(0, 0, 0);
+  out.rotation.set(0, 0, 0);
+  out.scale.set(1, 1, 1);
+  out.updateMatrixWorld(true);
+  return out;
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // STL Export
 // ════════════════════════════════════════════════════════════════════════════
@@ -62,7 +132,8 @@ function downloadFile(content, filename, mimeType) {
 export function exportSTL(mesh, name = 'model') {
   ({ mesh, name } = resolveTarget(mesh, name));
   const exporter = new STLExporter();
-  const result = exporter.parse(mesh, { binary: true });
+  const prepared = prepareMeshForSTL(mesh);
+  const result = exporter.parse(prepared, { binary: true });
   const filename = generateFilename(name, 'stl');
   downloadFile(result, filename, 'application/octet-stream');
   return filename;
@@ -75,7 +146,8 @@ export function exportSTL(mesh, name = 'model') {
 export function exportSTLAscii(mesh, name = 'model') {
   ({ mesh, name } = resolveTarget(mesh, name));
   const exporter = new STLExporter();
-  const result = exporter.parse(mesh, { binary: false });
+  const prepared = prepareMeshForSTL(mesh);
+  const result = exporter.parse(prepared, { binary: false });
   const filename = generateFilename(name, 'stl');
   downloadFile(result, filename, 'text/plain');
   return filename;

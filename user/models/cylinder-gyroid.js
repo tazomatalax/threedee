@@ -1,13 +1,15 @@
 import * as THREE from 'three';
 import { MarchingCubes } from 'three/examples/jsm/objects/MarchingCubes.js';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 export const parameters = {
   radius: 20.0,        // radius in mm (diameter = 40mm)
   height: 20.0,        // height in mm
-  resolution: 80,      // marching cubes resolution (increased for smoother walls)
+  resolution: 100,      // marching cubes resolution (increased for smoother walls)
   frequency: 0.2,      // spatial frequency of the gyroid (lower for larger models)
   level: 0.0,          // isosurface level (0 is balanced)
   isolation: 0.0,      // marching cubes isolation value
+  padding: 2.0,        // mm: keeps the surface away from the MC domain boundary (helps avoid open edges)
   color: 0x718096,
   metalness: 0.3,
   roughness: 0.4,
@@ -26,12 +28,21 @@ export function createMesh(params = parameters) {
     side: THREE.DoubleSide, // DoubleSide to see interior of gyroid cells
   });
 
-  const mc = new MarchingCubes(params.resolution, material, false, false, 200000);
+  // Increased maxPolyCount to 1,000,000 to prevent "cutting away" sections at high resolutions
+  const mc = new MarchingCubes(params.resolution, material, false, false, 1000000);
   mc.isolation = params.isolation;
   mc.castShadow = true;
   mc.receiveShadow = true;
 
   const size = params.resolution;
+
+  // Pad the sampling domain so that the actual boundary surfaces (cylinder wall + caps)
+  // do NOT lie exactly on the marching-cubes grid boundary. If an isosurface touches
+  // the outermost grid layer, some MC implementations can leave it effectively "uncapped",
+  // showing up as open edges in slicers.
+  const pad = Math.max(0, Number(params.padding ?? 0));
+  const fieldRadius = params.radius + pad;
+  const fieldHalfHeight = params.height / 2 + pad;
 
   // Number of gyroid periods around the circumference (must be integer for seamless wrap)
   const angularPeriods = 6;
@@ -40,10 +51,16 @@ export function createMesh(params = parameters) {
   for (let z = 0; z < size; z++) {
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
-        // Physical coordinates
-        const px = (x / (size - 1) - 0.5) * 2 * params.radius;
-        const pz = (z / (size - 1) - 0.5) * 2 * params.radius;
-        const py = (y / (size - 1) - 0.5) * params.height;
+        // Physical coordinates (matching MarchingCubes normalized domain, then scaled)
+        const nx = (x / (size - 1) - 0.5) * 2;
+        const ny = (y / (size - 1) - 0.5) * 2;
+        const nz = (z / (size - 1) - 0.5) * 2;
+
+        // Sample over a slightly larger domain (fieldRadius/fieldHalfHeight).
+        // The *actual* solid boundary is still defined by params.radius/params.height.
+        const px = nx * fieldRadius;
+        const pz = nz * fieldRadius;
+        const py = ny * fieldHalfHeight;
 
         const r = Math.sqrt(px * px + pz * pz);
         const theta = Math.atan2(pz, px); // ranges from -π to +π
@@ -76,8 +93,9 @@ export function createMesh(params = parameters) {
         const boundaryDist = Math.max(dRadial, dTop, dBottom);
         
         // Final value is the union of "outside" regions
-        // We use a factor (e.g., 5.0) to make the boundary crisp
-        val = Math.max(val, boundaryDist * 10);
+        // Using a slightly lower multiplier (5 instead of 10) helps the marching cubes
+        // interpolator produce smoother walls at the boundary.
+        val = Math.max(val, boundaryDist * 5);
 
         mc.setCell(x, y, z, val);
       }
@@ -87,8 +105,21 @@ export function createMesh(params = parameters) {
   // Create geometry from the field
   mc.update();
 
+  // Weld near-identical vertices to reduce tiny cracks/"open edges" reports in slicers,
+  // and recompute normals after welding.
+  // Note: MarchingCubes output can be very dense; keep the tolerance small.
+  try {
+    const welded = mergeVertices(mc.geometry, 1e-5);
+    welded.computeVertexNormals();
+    mc.geometry.dispose();
+    mc.geometry = welded;
+  } catch (e) {
+    // If welding fails for any reason, keep the original geometry.
+    console.warn('Vertex welding skipped:', e);
+  }
+
   // Scale and position
-  mc.scale.set(params.radius, params.height / 2, params.radius);
+  mc.scale.set(fieldRadius, fieldHalfHeight, fieldRadius);
   mc.position.y = params.height / 2;
 
   return mc;
