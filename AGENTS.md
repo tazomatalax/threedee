@@ -36,7 +36,8 @@ export const parameters = {
   color: 0xff0000,
 };
 
-export function createMesh(params = parameters) {
+export function createMesh(userParams = {}) {
+  const params = { ...parameters, ...userParams };
   const geometry = new THREE.BoxGeometry(params.size, params.size, params.size);
   const material = new THREE.MeshStandardMaterial({ color: params.color });
   const mesh = new THREE.Mesh(geometry, material);

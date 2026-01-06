@@ -32,7 +32,8 @@ export const parameters = {
 // Geometry Creation
 // ════════════════════════════════════════════════════════════════════════════
 
-export function createGeometry(params = parameters) {
+export function createGeometry(userParams = {}) {
+  const params = { ...parameters, ...userParams };
   const { width, height, depth } = params;
   
   // Create base geometry
@@ -47,7 +48,8 @@ export function createGeometry(params = parameters) {
 // Material Creation
 // ════════════════════════════════════════════════════════════════════════════
 
-export function createMaterial(params = parameters) {
+export function createMaterial(userParams = {}) {
+  const params = { ...parameters, ...userParams };
   return new THREE.MeshStandardMaterial({
     color: params.color,
     metalness: params.metalness,
@@ -59,7 +61,8 @@ export function createMaterial(params = parameters) {
 // Mesh Creation (combines geometry + material)
 // ════════════════════════════════════════════════════════════════════════════
 
-export function createMesh(params = parameters) {
+export function createMesh(userParams = {}) {
+  const params = { ...parameters, ...userParams };
   const geometry = createGeometry(params);
   const material = createMaterial(params);
   const mesh = new THREE.Mesh(geometry, material);

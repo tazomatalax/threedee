@@ -15,12 +15,14 @@ export const parameters = {
   roughness: 0.4,
 };
 
-export function createGeometry(params = parameters) {
+export function createGeometry(userParams = {}) {
+  const params = { ...parameters, ...userParams };
   const mesh = createMesh(params);
   return mesh.geometry;
 }
 
-export function createMesh(params = parameters) {
+export function createMesh(userParams = {}) {
+  const params = { ...parameters, ...userParams };
   const material = new THREE.MeshStandardMaterial({
     color: params.color,
     metalness: params.metalness,

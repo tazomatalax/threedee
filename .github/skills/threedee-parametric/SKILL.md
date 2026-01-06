@@ -73,7 +73,7 @@ mesh.rotation.y = Math.PI / 4;  // 45 degrees
 
 ### Parametric Pattern
 
-For reusable models, use the pattern in `user/models/`:
+For reusable models, use the pattern in `user/models/` and always merge with default parameters to handle partial updates correctly:
 
 ```javascript
 export const parameters = {
@@ -83,15 +83,37 @@ export const parameters = {
   color: 0x4a90d9,
 };
 
-export function createGeometry(params = parameters) {
+export function createGeometry(userParams = {}) {
+  const params = { ...parameters, ...userParams };
   return new THREE.BoxGeometry(params.width, params.height, params.depth);
 }
 
-export function createMesh(params = parameters) {
+export function createMesh(userParams = {}) {
+  const params = { ...parameters, ...userParams };
   const geometry = createGeometry(params);
   const material = new THREE.MeshStandardMaterial({ color: params.color });
   return new THREE.Mesh(geometry, material);
 }
+```
+
+### Geometry Merging Best Practices
+
+When combining different geometry types (e.g., mixing `BoxGeometry` with `ExtrudeGeometry`), they often have incompatible index buffers which causes `mergeGeometries` to fail.
+
+**Always convert to non-indexed** before merging to ensure compatibility:
+
+```javascript
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
+// ... create geometries ...
+
+// Convert all to non-indexed before merging to avoid attribute/index conflicts
+const compatibleGeometries = [geo1, geo2, geo3].map(g => g.toNonIndexed());
+const merged = mergeGeometries(compatibleGeometries);
+
+// Optional: Weld vertices afterwards if smooth shading is needed
+// import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+// const smooth = mergeVertices(merged);
 ```
 
 ### Exporting Models

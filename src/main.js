@@ -140,10 +140,10 @@ const material = new THREE.MeshStandardMaterial({
   envMapIntensity: 0.5,
 });
 
-// Cylinder gyroid demo
-import { createMesh as createGyroid, parameters as gyroidParams } from '../user/models/cylinder-gyroid.js';
+// Shelf bracket
+import { createMesh as createBracket } from '../user/models/shelf-bracket.js';
 
-const mesh = createGyroid();
+const mesh = createBracket({ length: 200, height: 100 });
 mesh.castShadow = true;
 mesh.receiveShadow = true;
 scene.add(mesh);
@@ -336,19 +336,19 @@ bboxToggle.addEventListener('click', () => {
 
 // Export button handlers
 document.getElementById('export-stl').addEventListener('click', () => {
-  window.threedeeExport.stl(mesh, 'cylinder-gyroid');
+  window.threedeeExport.stl(mesh, 'shelf-bracket');
 });
 document.getElementById('export-obj').addEventListener('click', () => {
-  window.threedeeExport.obj(mesh, 'cylinder-gyroid');
+  window.threedeeExport.obj(mesh, 'shelf-bracket');
 });
 document.getElementById('export-gltf').addEventListener('click', async () => {
-  await window.threedeeExport.gltf(mesh, 'cylinder-gyroid');
+  await window.threedeeExport.gltf(mesh, 'shelf-bracket');
 });
 document.getElementById('export-glb').addEventListener('click', async () => {
-  await window.threedeeExport.glb(mesh, 'cylinder-gyroid');
+  await window.threedeeExport.glb(mesh, 'shelf-bracket');
 });
 document.getElementById('export-step').addEventListener('click', async () => {
-  await window.threedeeExport.step(mesh, 'cylinder-gyroid');
+  await window.threedeeExport.step(mesh, 'shelf-bracket');
 });
 
 // Animation loop
