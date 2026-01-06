@@ -5,10 +5,10 @@
 
 :root {
   /* Core palette - dark industrial with cyan accent */
-  --bg-deep: #0a0a0b;
-  --bg-primary: #111113;
-  --bg-elevated: #18181b;
-  --bg-surface: #1f1f23;
+  --bg-deep: #1a1a1e;
+  --bg-primary: #1e1e24;
+  --bg-elevated: #25252b;
+  --bg-surface: #2d2d35;
   
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-medium: rgba(255, 255, 255, 0.1);
@@ -205,6 +205,7 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 100;
 }
 
 /* Axis indicator */
@@ -247,6 +248,66 @@ body {
   transform: translateX(-50%);
   color: var(--axis-z);
   background: rgba(59, 130, 246, 0.15);
+}
+
+/* Shortcuts Legend */
+.shortcuts-legend {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(26, 26, 30, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  padding: 12px;
+  pointer-events: auto;
+  user-select: none;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.legend-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.legend-item kbd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.legend-item span {
+  color: var(--text-secondary);
 }
 
 /* Grid info */

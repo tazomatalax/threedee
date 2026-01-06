@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import { MarchingCubes } from 'three/examples/jsm/objects/MarchingCubes.js';
 
 export const parameters = {
-  radius: 3.0,
-  height: 6.0,
+  radius: 2.0,
+  height: 2.0,
   resolution: 64,      // marching cubes resolution (lower = faster)
   frequency: 1.5,      // spatial frequency of the gyroid (controls number of periods)
   level: 0.8,          // isosurface level for gyroid (0 is the standard gyroid)
   isolation: 0.0,      // marching cubes isolation value (we use zero-level)
-  color: 0x4a5568,
+  color: 0x718096,
   metalness: 0.3,
   roughness: 0.4,
 };
@@ -68,7 +68,12 @@ export function createMesh(params = parameters) {
   // Create geometry from the field
   mc.update();
 
+  // Scale the mesh to matching physical dimensions
+  // MarchingCubes geometry is generated in range [-1, 1], so width/height is 2 units.
+  mc.scale.set(params.radius, params.height / 2, params.radius);
+
   // Position the mesh so its base sits on the ground plane (y = 0)
+  // Since geometry is centered at 0, bottom is at -1 * scale.y
   mc.position.y = params.height / 2;
 
   return mc;

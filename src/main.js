@@ -11,6 +11,10 @@ import './exporters.js'; // Initialize export functions on window.threedeeExport
 // Scene Setup
 // ════════════════════════════════════════════════════════════════════════════
 
+const state = {
+  autoRotate: true,
+};
+
 const canvas = document.getElementById('viewport');
 const scene = new THREE.Scene();
 
@@ -22,7 +26,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x0a0a0b, 1);
+renderer.setClearColor(0x1a1a1e, 1);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -51,11 +55,11 @@ controls.target.set(0, 0, 0);
 // ════════════════════════════════════════════════════════════════════════════
 
 // Ambient light for base illumination
-const ambientLight = new THREE.AmbientLight(0x404050, 0.5);
+const ambientLight = new THREE.AmbientLight(0x404050, 0.8);
 scene.add(ambientLight);
 
 // Key light (main directional light)
-const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
 keyLight.position.set(5, 8, 5);
 keyLight.castShadow = true;
 keyLight.shadow.mapSize.width = 2048;
@@ -129,7 +133,7 @@ scene.add(zAxis);
 
 // Material with modern PBR properties (kept for general use)
 const material = new THREE.MeshStandardMaterial({
-  color: 0x4a5568,
+  color: 0x718096,
   metalness: 0.3,
   roughness: 0.4,
   envMapIntensity: 0.5,
@@ -166,8 +170,8 @@ const envGeometry = new THREE.SphereGeometry(500, 32, 32);
 const envMaterial = new THREE.ShaderMaterial({
   side: THREE.BackSide,
   uniforms: {
-    topColor: { value: new THREE.Color(0x111115) },
-    bottomColor: { value: new THREE.Color(0x0a0a0b) },
+    topColor: { value: new THREE.Color(0x2a2a30) },
+    bottomColor: { value: new THREE.Color(0x1a1a1e) },
   },
   vertexShader: `
     varying vec3 vWorldPosition;
@@ -241,7 +245,9 @@ function animate() {
   const startTime = performance.now();
 
   // Gentle rotation for demo
-  mesh.rotation.y += 0.003;
+  if (state.autoRotate) {
+    mesh.rotation.y += 0.003;
+  }
 
   // Update controls
   controls.update();
@@ -304,7 +310,44 @@ if (typeof window !== 'undefined') {
   window.camera = camera;
   window.renderer = renderer;
   window.material = material;
+  window.state = state;
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+// Keyboard Shortcuts
+// ════════════════════════════════════════════════════════════════════════════
+
+window.addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() === 'r') {
+    state.autoRotate = !state.autoRotate;
+    console.log(`Auto-rotate: ${state.autoRotate ? 'ON' : 'OFF'}`);
+    
+    if (!state.autoRotate) {
+      mesh.rotation.set(0, 0, 0);
+    }
+  }
+
+  if (e.key.toLowerCase() === 'h') {
+    // Reset camera position
+    camera.position.set(5, 4, 6);
+    controls.target.set(0, 0, 0);
+    controls.update();
+    
+    // Also stop rotation and reset mesh if currently rotating
+    state.autoRotate = false;
+    mesh.rotation.set(0, 0, 0);
+    console.log('View reset to Home');
+  }
+
+  if (e.code === 'Space') {
+    e.preventDefault(); // Prevent page scroll
+    grid.visible = !grid.visible;
+    xAxis.visible = grid.visible;
+    yAxis.visible = grid.visible;
+    zAxis.visible = grid.visible;
+    console.log(`Grid visibility: ${grid.visible ? 'ON' : 'OFF'}`);
+  }
+});
+
 // Export for potential external manipulation
-export { scene, camera, renderer, mesh, material };
+export { scene, camera, renderer, mesh, material, state };
