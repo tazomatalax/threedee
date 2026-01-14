@@ -161,7 +161,7 @@ export function createMesh(userParams = {}) {
   
   // Bark Mesh
   if (branchGeometries.length > 0) {
-    const mergedBark = mergeGeometries(branchGeometries.map(g => g.toNonIndexed()));
+    const mergedBark = mergeGeometries(branchGeometries.map(g => g.index ? g.toNonIndexed() : g));
     const barkMaterial = new THREE.MeshStandardMaterial({ 
       color: params.barkColor,
       roughness: 1.0,
@@ -175,7 +175,7 @@ export function createMesh(userParams = {}) {
   
   // Foliage Mesh
   if (leafGeometries.length > 0) {
-    const mergedLeaves = mergeGeometries(leafGeometries.map(g => g.toNonIndexed()));
+    const mergedLeaves = mergeGeometries(leafGeometries.map(g => g.index ? g.toNonIndexed() : g));
     const leafMaterial = new THREE.MeshStandardMaterial({ 
       color: params.leafColor,
       roughness: 0.8,

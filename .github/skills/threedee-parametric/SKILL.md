@@ -231,12 +231,32 @@ The [src/exporters.js](src/exporters.js) utilities include an automated preparat
 
 ## Workflow
 
-1. User requests a 3D object or modification
-2. **Create a new file** in `user/models/` (e.g., `user/models/widget.js`)
-3. Export a `createMesh()` function that returns a `THREE.Mesh`
-4. Save — the model auto-appears in the dropdown selector
-5. User selects the model from the **MODEL** dropdown (top-left of viewport)
-6. Export when ready via the **EXPORT MODEL** panel (right side)
+### Creating vs Iterating
+
+**IMPORTANT:** When asked to improve, refine, or iterate on an existing model:
+- **DO:** Edit the existing model file directly (e.g., modify `user/models/tree.js`)
+- **DON'T:** Create new files like `tree-v2.js`, `tree-improved.js`, `realistic-tree.js`
+
+Only create a new file when the user explicitly asks for a **new, separate model**.
+
+### Standard Workflow
+
+1. User requests a new 3D object → Create a new file in `user/models/`
+2. User requests improvements/changes → **Edit the existing model file**
+3. Save — the viewport hot-reloads instantly
+4. The user's selected model persists across page refreshes
+5. Export when ready via the **EXPORT MODEL** panel
+
+### Iteration Examples
+
+**User says:** "Make the tree more realistic"
+**Action:** Edit `user/models/tree.js` to improve the existing code
+
+**User says:** "Add more branches and better textures"
+**Action:** Edit `user/models/tree.js` to add the requested features
+
+**User says:** "Create a pine tree (separate from the oak tree)"
+**Action:** Create a new file `user/models/pine-tree.js`
 
 ### Console Commands
 
@@ -256,11 +276,13 @@ window.mesh
 
 - The viewport runs at `http://localhost:3002` (or next available port)
 - **Models are auto-discovered** from `user/models/*.js` — no manual registration needed!
+- **Selected model persists** across page refreshes via localStorage
 - Model filenames use kebab-case (e.g., `my-widget.js`) and display as Title Case in the UI
 - Y-axis is up (standard Three.js convention)
 - Objects should be positioned with `y > 0` to sit above the grid
 - The `mesh` variable is exported and accessible in console via `window.mesh`
 - All changes hot-reload instantly—no refresh needed
+- **When iterating: edit the existing file, don't create new versions**
 
 ## References
 

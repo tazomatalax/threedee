@@ -59,6 +59,15 @@ export function createMesh(userParams = {}) {
 1. The file is auto-discovered via Vite's glob import
 2. It appears in the **MODEL** dropdown (top-left of viewport)
 3. The user can select it to view and export
+4. The selected model persists across page refreshes
+
+### Creating vs Iterating
+
+**CRITICAL:** When asked to improve, refine, or iterate on an existing model:
+- **DO:** Edit the existing model file directly (e.g., modify `user/models/tree.js`)
+- **DON'T:** Create new files like `tree-v2.js`, `tree-improved.js`, `realistic-tree.js`
+
+Only create a new file when the user explicitly asks for a **new, separate model**.
 
 ### Viewing Your Model
 

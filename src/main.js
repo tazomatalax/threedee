@@ -174,8 +174,23 @@ modelList.forEach(model => {
   modelSelector.appendChild(option);
 });
 
-// Current model state
-let currentModelId = modelList.length > 0 ? modelList[0].id : null;
+// Restore last viewed model from localStorage, or use first model as default
+const STORAGE_KEY = 'threedee-current-model';
+const savedModelId = localStorage.getItem(STORAGE_KEY);
+const defaultModelId = modelList.length > 0 ? modelList[0].id : null;
+
+console.log('Model persistence:', { savedModelId, defaultModelId, hasInRegistry: savedModelId ? !!modelRegistry[savedModelId] : false });
+
+// Use saved model if it still exists in the registry, otherwise fall back to default
+let currentModelId = (savedModelId && modelRegistry[savedModelId]) ? savedModelId : defaultModelId;
+
+console.log('Loading model:', currentModelId);
+
+// Set the dropdown to show the current model
+if (currentModelId) {
+  modelSelector.value = currentModelId;
+}
+
 let mesh = null;
 
 // Load and display a model by ID
@@ -205,6 +220,9 @@ async function loadModel(modelId) {
     mesh.receiveShadow = true;
     scene.add(mesh);
     currentModelId = modelId;
+    
+    // Persist selection to localStorage
+    localStorage.setItem(STORAGE_KEY, modelId);
 
     // Update UI
     updateModelInfo();
