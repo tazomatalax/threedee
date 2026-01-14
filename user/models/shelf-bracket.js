@@ -7,7 +7,7 @@ export const parameters = {
   width: 30,      // mm: width of the bracket metal
   thickness: 6,   // mm: thickness of the material
   holeDiameter: 5,// mm: screw hole size
-  color: 0x2b2b2b, // dark grey/black metal look
+  color: 0xcccccc, // light grey metal look
 };
 
 export function createMesh(userParams = {}) {

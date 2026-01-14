@@ -17,14 +17,16 @@ This document explains the `threedee` repository structure and workflow for AI a
 
 To create a new 3D model, create a new JavaScript file in `user/models/` (e.g., `user/models/my-new-part.js`).
 
+**Models are automatically discovered!** Any `.js` file in `user/models/` will automatically appear in the UI's model selector dropdown. The filename (without `.js`) becomes the model ID, converted to Title Case for display.
+
 A standard model file **must** export the following:
 
-1.  **`parameters`**: An object defining the default values for the model (dimensions, colors, etc.).
-2.  **`createMesh(params)`**: A function that takes parameters and returns a `THREE.Mesh`.
+1.  **`createMesh(params)`**: A function that takes parameters and returns a `THREE.Mesh`.
     - It should handle geometry creation (or call a helper like `createGeometry`).
     - It should handle material creation (or call a helper like `createMaterial`).
     - It should set `castShadow` and `receiveShadow` to `true`.
-3.  **`metadata`** (Optional but recommended): An object with name, description, author, etc.
+2.  **`parameters`** (Optional but recommended): An object defining the default values for the model (dimensions, colors, etc.).
+3.  **`metadata`** (Optional): An object with name, description, author, etc.
 
 ### Example Template
 
@@ -52,27 +54,33 @@ export function createMesh(userParams = {}) {
 
 ## Integrating a Model
 
-To view a model, you must import it into `src/main.js` and add it to the scene.
+**Models are automatically integrated!** When you create a new `.js` file in `user/models/`:
 
-1.  **Open `src/main.js`**.
-2.  **Locate the "Demo Object" section**.
-3.  **Import your model**:
-    ```javascript
-    import { createMesh as createMyModel } from '../user/models/my-new-part.js';
-    ```
-4.  **Define parameters** (optional, to override defaults):
-    ```javascript
-    const myParams = { size: 15, color: 0x00ff00 };
-    ```
-5.  **Create and add the mesh**:
-    ```javascript
-    // Remove existing mesh if necessary (or just comment it out)
-    // scene.remove(currentMesh); 
-    
-    const mesh = createMyModel(myParams);
-    scene.add(mesh);
-    ```
-    *Note: Ensure the variable name `mesh` is used if you want the animation loop to rotate it, or update the animation loop accordingly.*
+1. The file is auto-discovered via Vite's glob import
+2. It appears in the **MODEL** dropdown (top-left of viewport)
+3. The user can select it to view and export
+
+### Viewing Your Model
+
+1. Save the model file in `user/models/`
+2. Refresh the browser (or it may hot-reload automatically)
+3. Select your model from the **MODEL** dropdown in the UI
+4. The model loads instantly with updated dimensions displayed
+
+### Console Access
+
+You can also load models programmatically from the browser console:
+
+```javascript
+// Load by model ID (filename without .js)
+await loadModel('my-new-part');
+
+// List all available models
+console.log(modelList);  // [{id: 'example-part', name: 'Example Part'}, ...]
+
+// Access current mesh
+window.mesh;
+```
 
 ## Exporting Models
 

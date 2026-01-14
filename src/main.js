@@ -129,7 +129,7 @@ const zAxis = new THREE.Line(zAxisGeometry, zAxisMaterial);
 scene.add(zAxis);
 
 // ════════════════════════════════════════════════════════════════════════════
-// Demo Object — Edit this section to create your 3D designs!
+// Model Loading System (Dynamic Discovery)
 // ════════════════════════════════════════════════════════════════════════════
 
 // Material with modern PBR properties (kept for general use)
@@ -140,13 +140,91 @@ const material = new THREE.MeshStandardMaterial({
   envMapIntensity: 0.5,
 });
 
-// Shelf bracket
-import { createMesh as createBracket } from '../user/models/shelf-bracket.js';
+// Dynamically discover all models in user/models/ using Vite's glob import
+// This automatically picks up new model files without manual registration!
+const modelModules = import.meta.glob('../user/models/*.js');
 
-const mesh = createBracket({ length: 200, height: 100 });
-mesh.castShadow = true;
-mesh.receiveShadow = true;
-scene.add(mesh);
+// Build model registry from discovered files
+const modelRegistry = {};
+const modelList = [];
+
+for (const path in modelModules) {
+  // Extract model ID from path: '../user/models/my-model.js' -> 'my-model'
+  const match = path.match(/\/([^\/]+)\.js$/);
+  if (match) {
+    const modelId = match[1];
+    modelRegistry[modelId] = modelModules[path];
+    modelList.push({
+      id: modelId,
+      name: modelId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    });
+  }
+}
+
+// Sort models alphabetically
+modelList.sort((a, b) => a.name.localeCompare(b.name));
+
+// Populate the model selector dropdown
+const modelSelector = document.getElementById('model-selector');
+modelSelector.innerHTML = ''; // Clear placeholder
+modelList.forEach(model => {
+  const option = document.createElement('option');
+  option.value = model.id;
+  option.textContent = model.name;
+  modelSelector.appendChild(option);
+});
+
+// Current model state
+let currentModelId = modelList.length > 0 ? modelList[0].id : null;
+let mesh = null;
+
+// Load and display a model by ID
+async function loadModel(modelId) {
+  if (!modelRegistry[modelId]) {
+    console.error(`Model "${modelId}" not found in registry`);
+    return;
+  }
+
+  // Remove existing mesh
+  if (mesh) {
+    scene.remove(mesh);
+    if (mesh.geometry) mesh.geometry.dispose();
+    if (mesh.material) {
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach(m => m.dispose());
+      } else {
+        mesh.material.dispose();
+      }
+    }
+  }
+
+  try {
+    const module = await modelRegistry[modelId]();
+    mesh = module.createMesh();
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    currentModelId = modelId;
+
+    // Update UI
+    updateModelInfo();
+    updateDimensions();
+    
+    // Update window reference
+    window.mesh = mesh;
+    
+    console.log(`Loaded model: ${modelId}`);
+  } catch (err) {
+    console.error(`Failed to load model "${modelId}":`, err);
+  }
+}
+
+// Initial model load (first model in sorted list)
+if (currentModelId) {
+  await loadModel(currentModelId);
+} else {
+  console.warn('No models found in user/models/');
+}
 
 // Bounding box helper for dimension visualization
 const boundingBoxHelper = new THREE.Box3Helper(new THREE.Box3(), 0x22d3ee);
@@ -334,21 +412,27 @@ bboxToggle.addEventListener('click', () => {
   bboxToggle.classList.toggle('active', state.showBoundingBox);
 });
 
+// Model selector handler
+const modelSelector = document.getElementById('model-selector');
+modelSelector.addEventListener('change', async (e) => {
+  await loadModel(e.target.value);
+});
+
 // Export button handlers
 document.getElementById('export-stl').addEventListener('click', () => {
-  window.threedeeExport.stl(mesh, 'shelf-bracket');
+  window.threedeeExport.stl(mesh, currentModelId);
 });
 document.getElementById('export-obj').addEventListener('click', () => {
-  window.threedeeExport.obj(mesh, 'shelf-bracket');
+  window.threedeeExport.obj(mesh, currentModelId);
 });
 document.getElementById('export-gltf').addEventListener('click', async () => {
-  await window.threedeeExport.gltf(mesh, 'shelf-bracket');
+  await window.threedeeExport.gltf(mesh, currentModelId);
 });
 document.getElementById('export-glb').addEventListener('click', async () => {
-  await window.threedeeExport.glb(mesh, 'shelf-bracket');
+  await window.threedeeExport.glb(mesh, currentModelId);
 });
 document.getElementById('export-step').addEventListener('click', async () => {
-  await window.threedeeExport.step(mesh, 'shelf-bracket');
+  await window.threedeeExport.step(mesh, currentModelId);
 });
 
 // Animation loop
@@ -429,6 +513,9 @@ if (typeof window !== 'undefined') {
   window.renderer = renderer;
   window.material = material;
   window.state = state;
+  window.loadModel = loadModel;
+  window.modelRegistry = modelRegistry;
+  window.modelList = modelList;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -468,4 +555,4 @@ window.addEventListener('keydown', (e) => {
 });
 
 // Export for potential external manipulation
-export { scene, camera, renderer, mesh, material, state };
+export { scene, camera, renderer, mesh, material, state, loadModel, currentModelId, modelList, modelRegistry };

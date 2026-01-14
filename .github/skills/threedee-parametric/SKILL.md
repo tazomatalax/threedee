@@ -12,40 +12,74 @@ A live-updating 3D viewport for parametric modeling with AI assistance. Edit cod
 ```
 threedee/
 ├── src/
-│   ├── main.js          # Main scene, camera, lighting, demo object
+│   ├── main.js          # Main scene, camera, lighting, model loader
 │   └── exporters.js     # STL/OBJ/glTF export utilities
 ├── user/
-│   ├── models/          # User's parametric model definitions
+│   ├── models/          # User's parametric model definitions (auto-discovered!)
 │   └── exports/         # Generated mesh files (STL, OBJ, glTF)
-└── index.html           # Viewport UI
+└── index.html           # Viewport UI with model selector
 ```
+
+## Creating New Models (Recommended Workflow)
+
+**Models are automatically discovered!** Simply create a new `.js` file in `user/models/` and it will appear in the UI dropdown after a page refresh.
+
+### Step 1: Create a Model File
+
+Create a new file in `user/models/` with a descriptive kebab-case name (e.g., `my-bracket.js`).
+The filename becomes the model ID and is converted to Title Case in the UI.
+
+### Step 2: Export Required Functions
+
+Every model file **must** export a `createMesh()` function:
+
+```javascript
+// user/models/my-bracket.js
+import * as THREE from 'three';
+
+export const parameters = {
+  width: 40,
+  height: 20,
+  thickness: 5,
+  color: 0x4a90d9,
+};
+
+export function createMesh(userParams = {}) {
+  const params = { ...parameters, ...userParams };
+  
+  const geometry = new THREE.BoxGeometry(
+    params.width, 
+    params.height, 
+    params.thickness
+  );
+  const material = new THREE.MeshStandardMaterial({ color: params.color });
+  const mesh = new THREE.Mesh(geometry, material);
+  
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.position.y = params.height / 2; // Sit on ground plane
+  
+  return mesh;
+}
+```
+
+### Step 3: Save and View
+
+1. Save the file
+2. The browser will hot-reload (or refresh if needed)
+3. Select your new model from the **MODEL** dropdown in the top-left
+4. Export when ready using the **EXPORT MODEL** panel
 
 ## Quick Reference
 
-### Creating Objects
-
-Edit `src/main.js` in the "Demo Object" section:
+### Basic Primitives
 
 ```javascript
-// Basic primitives
 const geometry = new THREE.BoxGeometry(2, 1, 3);           // width, height, depth
 const geometry = new THREE.SphereGeometry(1, 32, 32);      // radius, segments
 const geometry = new THREE.CylinderGeometry(1, 1, 2, 32);  // topR, bottomR, height
 const geometry = new THREE.TorusGeometry(1, 0.4, 16, 100); // radius, tube, segments
-const geometry = new THREE.TorusKnotGeometry(1, 0.35, 128, 32); // current demo
-
-// Material
-const material = new THREE.MeshStandardMaterial({
-  color: 0x4a5568,    // hex color
-  metalness: 0.3,     // 0-1
-  roughness: 0.4,     // 0-1
-});
-
-// Create mesh and add to scene
-const mesh = new THREE.Mesh(geometry, material);
-mesh.position.set(x, y, z);
-mesh.castShadow = true;
-scene.add(mesh);
+const geometry = new THREE.TorusKnotGeometry(1, 0.35, 128, 32);
 ```
 
 ### Common Modifications
@@ -73,7 +107,7 @@ mesh.rotation.y = Math.PI / 4;  // 45 degrees
 
 ### Parametric Pattern
 
-For reusable models, use the pattern in `user/models/` and always merge with default parameters to handle partial updates correctly:
+For reusable models, always merge with default parameters to handle partial updates correctly:
 
 ```javascript
 export const parameters = {
@@ -198,17 +232,34 @@ The [src/exporters.js](src/exporters.js) utilities include an automated preparat
 ## Workflow
 
 1. User requests a 3D object or modification
-2. Edit `src/main.js` (or create file in `user/models/`)
-3. Save — Vite hot-reloads the viewport automatically
-4. User sees result at http://localhost:3002
-5. Export when ready via console commands
+2. **Create a new file** in `user/models/` (e.g., `user/models/widget.js`)
+3. Export a `createMesh()` function that returns a `THREE.Mesh`
+4. Save — the model auto-appears in the dropdown selector
+5. User selects the model from the **MODEL** dropdown (top-left of viewport)
+6. Export when ready via the **EXPORT MODEL** panel (right side)
+
+### Console Commands
+
+Models can also be loaded programmatically:
+```javascript
+// Load a model by ID (filename without .js)
+await loadModel('shelf-bracket');
+
+// List all available models
+console.log(modelList);
+
+// Access current mesh
+window.mesh
+```
 
 ## Important Notes
 
 - The viewport runs at `http://localhost:3002` (or next available port)
+- **Models are auto-discovered** from `user/models/*.js` — no manual registration needed!
+- Model filenames use kebab-case (e.g., `my-widget.js`) and display as Title Case in the UI
 - Y-axis is up (standard Three.js convention)
 - Objects should be positioned with `y > 0` to sit above the grid
-- The `mesh` variable is exported and accessible in console
+- The `mesh` variable is exported and accessible in console via `window.mesh`
 - All changes hot-reload instantly—no refresh needed
 
 ## References
