@@ -219,13 +219,6 @@ async function loadModel(modelId) {
   }
 }
 
-// Initial model load (first model in sorted list)
-if (currentModelId) {
-  await loadModel(currentModelId);
-} else {
-  console.warn('No models found in user/models/');
-}
-
 // Bounding box helper for dimension visualization
 const boundingBoxHelper = new THREE.Box3Helper(new THREE.Box3(), 0x22d3ee);
 boundingBoxHelper.visible = state.showBoundingBox;
@@ -388,6 +381,8 @@ function updateModelInfo() {
 
 // Update dimension display based on actual mesh bounding box
 function updateDimensions() {
+  if (!mesh) return; // Don't update if no mesh loaded yet
+  
   const box = new THREE.Box3().setFromObject(mesh);
   const size = new THREE.Vector3();
   box.getSize(size);
@@ -402,7 +397,14 @@ function updateDimensions() {
 }
 
 updateModelInfo();
-updateDimensions();
+
+// Initial model load (first model in sorted list)
+// Must be called after DOM elements and functions are initialized
+if (currentModelId) {
+  await loadModel(currentModelId);
+} else {
+  console.warn('No models found in user/models/');
+}
 
 // Bounding box toggle handler
 bboxToggle.addEventListener('click', () => {
@@ -413,7 +415,6 @@ bboxToggle.addEventListener('click', () => {
 });
 
 // Model selector handler
-const modelSelector = document.getElementById('model-selector');
 modelSelector.addEventListener('change', async (e) => {
   await loadModel(e.target.value);
 });

@@ -147,7 +147,8 @@ export function createMesh(userParams = {}) {
   // Let's just delete the index from all to be safe and simple, or re-index them?
   // No, mergeGeometries works best if we just strip indices (make them non-indexed) -> merge -> (optional) mergeVertices/computeVertexNormals.
   
-  const compatibleGeometries = geometries.map(g => g.toNonIndexed());
+  // Only convert indexed geometries to avoid warnings
+  const compatibleGeometries = geometries.map(g => g.index ? g.toNonIndexed() : g);
   const mergedGeometry = mergeGeometries(compatibleGeometries);
   
   // Re-merge vertices for a clean mesh (optional but good for shading)
