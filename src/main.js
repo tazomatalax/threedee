@@ -27,7 +27,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x1a1a1e, 1);
+renderer.setClearColor(0x252529, 1);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -56,7 +56,7 @@ controls.target.set(0, 0, 0);
 // ════════════════════════════════════════════════════════════════════════════
 
 // Ambient light for base illumination
-const ambientLight = new THREE.AmbientLight(0x404050, 0.8);
+const ambientLight = new THREE.AmbientLight(0x505060, 0.9);
 scene.add(ambientLight);
 
 // Key light (main directional light)
@@ -93,7 +93,7 @@ const gridSize = 200;
 const gridDivisions = 20;
 
 // Main grid
-const grid = new THREE.GridHelper(gridSize, gridDivisions, 0x333333, 0x1a1a1a);
+const grid = new THREE.GridHelper(gridSize, gridDivisions, 0x44444a, 0x2d2d33);
 grid.material.opacity = 0.6;
 grid.material.transparent = true;
 scene.add(grid);
@@ -247,8 +247,8 @@ const envGeometry = new THREE.SphereGeometry(500, 32, 32);
 const envMaterial = new THREE.ShaderMaterial({
   side: THREE.BackSide,
   uniforms: {
-    topColor: { value: new THREE.Color(0x2a2a30) },
-    bottomColor: { value: new THREE.Color(0x1a1a1e) },
+    topColor: { value: new THREE.Color(0x35353d) },
+    bottomColor: { value: new THREE.Color(0x252529) },
   },
   vertexShader: `
     varying vec3 vWorldPosition;

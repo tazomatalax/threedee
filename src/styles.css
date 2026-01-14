@@ -5,19 +5,20 @@
 
 :root {
   /* Core palette - dark industrial with cyan accent */
-  --bg-deep: #1a1a1e;
-  --bg-primary: #1e1e24;
-  --bg-elevated: #25252b;
-  --bg-surface: #2d2d35;
+  --bg-deep: #252529;
+  --bg-primary: #2d2d33;
+  --bg-elevated: #35353d;
+  --bg-surface: #3e3e4a;
+  --bg-panel: rgba(37, 37, 41, 0.85);
   
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-medium: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.15);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.18);
   
   --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
-  --text-muted: #52525b;
+  --text-tertiary: #a1a1aa; /* Lightened from #71717a */
+  --text-muted: #71717a;    /* Lightened from #52525b */
   
   /* Accent colors */
   --accent-primary: #22d3ee;
@@ -215,7 +216,7 @@ body {
   left: 16px;
   width: 80px;
   height: 80px;
-  background: rgba(26, 26, 30, 0.6);
+  background: var(--bg-panel);
   backdrop-filter: blur(4px);
   border: 1px solid var(--border-medium);
   border-radius: 6px;
@@ -232,7 +233,7 @@ body {
   position: absolute;
   top: 16px;
   left: 16px;
-  background: rgba(26, 26, 30, 0.85);
+  background: var(--bg-panel);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border-medium);
   border-radius: 6px;
@@ -293,7 +294,7 @@ body {
   position: absolute;
   bottom: 16px;
   left: 110px;
-  background: rgba(26, 26, 30, 0.85);
+  background: var(--bg-panel);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border-medium);
   border-radius: 6px;
@@ -365,7 +366,7 @@ body {
   position: absolute;
   top: 140px;
   right: 16px;
-  background: rgba(26, 26, 30, 0.85);
+  background: var(--bg-panel);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border-medium);
   border-radius: 6px;
@@ -432,7 +433,7 @@ body {
   position: absolute;
   top: 16px;
   right: 16px;
-  background: rgba(26, 26, 30, 0.85);
+  background: var(--bg-panel);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border-medium);
   border-radius: 6px;
